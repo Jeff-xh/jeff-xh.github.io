@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My PWA App</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    #installButton { /* 样式注释：设置按钮的样式 */
+        display: none; /* 初始隐藏按钮 */
+        padding: 10px 20px;
+        background-color: #4CAF50; /* 绿色 */
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    #SafariInstallButton { /* 样式注释：设置按钮的样式 */
+        display: none; /* 初始隐藏按钮 */
+        padding: 10px 20px;
+        background-color: #316bb5; /* 蓝色 */
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello PWA</h1>
+  <button id="installButton">Install</button>
+  <script src="script.js"></script>
+
+  <div id="result"></div>
+
+  <script>
+      var resultDiv = document.getElementById('result');
+      var userAgent = navigator.userAgent;
+      var os, browser;
+
+      // 判断操作系统
+      if (userAgent.indexOf('Windows') !== -1) {
+          os = 'Windows';
+      } else if (userAgent.indexOf('Mac OS X') !== -1) {
+          os = 'Mac OS X';
+      } else if (userAgent.indexOf('Linux') !== -1) {
+          os = 'Linux';
+      } else if (userAgent.indexOf('Android') !== -1) {
+          os = 'Android';
+      } else if (userAgent.indexOf('iPhone') !== -1 || userAgent.indexOf('iPad') !== -1) {
+          os = 'iOS';
+      } else {
+          os = '未知操作系统';
+      }
+
+      // 判断浏览器
+      if (userAgent.indexOf('Chrome') !== -1) {
+          browser = 'Chrome';
+      } else if (userAgent.indexOf('Firefox') !== -1) {
+          browser = 'Firefox';
+      } else if (userAgent.indexOf('Safari') !== -1) {
+          browser = 'Safari';
+      } else if (userAgent.indexOf('Edge') !== -1) {
+          browser = 'Edge';
+      } else if (userAgent.indexOf('Trident') !== -1 || userAgent.indexOf('MSIE') !== -1) {
+          browser = 'IE';
+      } else {
+          browser = '未知浏览器';
+      }
+
+      resultDiv.innerHTML = '您的操作系统是：' + os + '<br>您的浏览器是：' + browser;
+
+      // 判断是否显示按钮
+      if ((os === 'Windows' || os === 'Mac OS X') && (browser === 'Chrome' || browser === 'Edge')) {
+            installButton.style.display = 'block'; // 显示按钮
+        }
+      if ((os === 'iOS') && (browser === 'Safari')) {
+            SafariInstallButton.style.display = 'block'; // 显示按钮
+        }
+  </script>
+
+
+</body>
+</html>
+
+
