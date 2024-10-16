@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-P7L5VFKS');</script>
+    <!-- End Google Tag Manager -->
   <title>My PWA App</title>
   <link rel="manifest" href="manifest.json">
   <style>
@@ -23,7 +30,11 @@
   </style>
 </head>
 <body>
-  <h1>Hello PWA</h1>
+    <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P7L5VFKS"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+  <h1>Hello PWA!</h1>
   <button id="installButton">Install</button>
   <script src="script.js"></script>
 
@@ -70,6 +81,9 @@
       if ((os === 'Windows' || os === 'Mac OS X') && (browser === 'Chrome' || browser === 'Edge')) {
             installButton.style.display = 'block'; // 显示按钮
         }
+      if ((os === 'Android') && (browser === 'Chrome')) {
+            SafariInstallButton.style.display = 'block'; // 显示按钮
+        }
       if ((os === 'iOS') && (browser === 'Safari')) {
             SafariInstallButton.style.display = 'block'; // 显示按钮
         }
@@ -78,5 +92,3 @@
 
 </body>
 </html>
-
-
