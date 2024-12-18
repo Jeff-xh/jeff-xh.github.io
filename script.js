@@ -37,47 +37,127 @@ function downloadFile(filename, content) {
 
 // 获取 PWA 显示模式
 function getDisplayMode() {
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-  if (document.referrer.startsWith('android-app://')) {
-    return 'twa'; // 可信网络活动 (Trusted Web Activity)
-  } else if (navigator.standalone || isStandalone) {
-    return 'standalone'; // 独立模式
+  if (document.referrer.startsWith("android-app://")) {
+    return "twa"; // 可信网络活动 (Trusted Web Activity)
+  } else if (navigator.standalone || window.matchMedia("(display-mode: standalone)").matches) {
+    return "standalone"; // 独立模式
   }
-  return 'browser'; // 浏览器模式
+  return "browser"; // 浏览器模式
 }
 
 window.addEventListener("load", () => {
   const displayMode = getDisplayMode();
   document.getElementById("display-mode").textContent = displayMode;
 
-  // 创建检查按钮
-  const checkButton = document.createElement("button");
-  checkButton.textContent = "Check for temp.txt";
-  checkButton.id = "checkButton";
-  document.body.appendChild(checkButton);
+  // 获取 "Check for PCdemo" 按钮
+  const checkButton = document.getElementById("checkButton");
 
   checkButton.addEventListener("click", async () => {
-    try {
-      const dirHandle = await window.showDirectoryPicker({
-        startIn: "downloads", // 建议起始目录为下载目录
-        mode: "read", // 只读模式
-      });
-
-      // 遍历目录中的所有文件
-      for await (const entry of dirHandle.values()) {
-        if (entry.kind === "file" && entry.name === "temp.txt") {
-          console.log("temp.txt exists in Downloads!");
-          alert("temp.txt exists in Downloads!");
-          return; // 找到文件后退出循环
+    // 检测 PCdemo 是否存在的逻辑
+    async function isProtocolHandled(scheme) {
+      if (navigator.userAgent.includes("Chrome")) {
+        // Workaround to detect in recent Chrome versions
+        // See: https://developer.chrome.com/docs/web-platform/detect-installed-pwa/
+        try {
+          await navigator.getInstalledRelatedApps(); // Needs to be a PWA
+          await window.navigator.userAgentData.getHighEntropyValues(["getInstalledRelatedApps"]); // Needs to be a secure context (HTTPS)
+        } catch (e) {
+          // Not a PWA or not a secure context, let's use the blur approach
         }
       }
+      return new Promise((resolve) => {
+        const onBlur = () => {
+          resolve(true);
+          clearTimeout(timeout);
+          window.removeEventListener("blur", onBlur);
+        };
+        window.addEventListener("blur", onBlur);
+        const timeout = setTimeout(() => {
+          resolve(false);
+          window.removeEventListener("blur", onBlur);
+        }, 500); // 500ms has been a good timeout, but you can increase it.
+        try {
+          window.location.href = scheme + "://";
+        } catch (e) {
+          resolve(false);
+        }
+      });
+    }
 
-      // 循环结束未找到文件
-      console.log("temp.txt does not exist in Downloads.");
-      alert("temp.txt does not exist in Downloads.");
-    } catch (error) {
-      console.error("Error checking for file:", error);
-      alert("An error occurred while checking for the file.");
+    // Check if the "pcdemo" protocol is handled
+    isProtocolHandled("pcdemo").then((isHandled) => {
+      const pcdemoStatus = document.createElement("p");
+      if (isHandled) {
+        pcdemoStatus.textContent = "PCdemo is installed.";
+        // If installed, add a button to launch it
+        const launchButton = document.createElement("button");
+        launchButton.textContent = "Launch PCdemo";
+        launchButton.id = "launchButton";
+        launchButton.addEventListener("click", () => {
+          window.location.href = "pcdemo://frompwa";
+        });
+        document.body.appendChild(launchButton);
+      } else {
+        pcdemoStatus.textContent = "PCdemo is not installed.";
+        // If not installed, check for the installer in the Downloads folder
+        checkForInstaller();
+      }
+      document.body.appendChild(pcdemoStatus);
+    });
+
+    async function checkForInstaller() {
+      try {
+        const dirHandle = await window.showDirectoryPicker({
+            startIn: 'downloads',
+            mode: 'read'
+        });
+
+        // Look for the installer file
+        let installerFound = false;
+        for await (const entry of dirHandle.values()) {
+          if (entry.kind === "file" && entry.name === "PCdemo_installer.exe") {
+            installerFound = true;
+            const file = await entry.getFile();
+            const url = URL.createObjectURL(file);
+            const link = document.createElement('a');
+            link.href = url;
+            link.textContent = 'Right-click here and choose "Show in folder" to open the installer location.';
+            link.id = "installerLink";
+            document.body.appendChild(link);
+            break;
+          }
+        }
+
+        if (!installerFound) {
+          const downloadButton = document.createElement("button");
+          downloadButton.textContent = "Download PCdemo Installer";
+          downloadButton.id = "downloadButton";
+          downloadButton.addEventListener("click", async () => {
+            // Replace with your actual download logic
+            const installerUrl = "https://example.com/PCdemo_installer.exe"; // Replace with your installer URL
+            try {
+                const response = await fetch(installerUrl);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'PCdemo_installer.exe'; // Or any other filename you prefer
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Error downloading the installer:', error);
+                alert('Failed to download installer.');
+            }
+          });
+          document.body.appendChild(downloadButton);
+        }
+      } catch (error) {
+        console.error("Error accessing the directory:", error);
+        alert("An error occurred while accessing the Downloads directory.");
+      }
     }
   });
 });
