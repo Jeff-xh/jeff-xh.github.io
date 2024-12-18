@@ -1,0 +1,18 @@
+/* style.css */
+.install-button {
+    display: none; /* 初始隐藏按钮 */
+    padding: 10px 20px;
+    background-color: #4caf50; /* 绿色 */
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .safari-install-button {
+      display: none;
+      padding: 10px 20px;
+      background-color: #316bb5; /* 蓝色 */
+      color: white;
+      border: none;
+      cursor: pointer;
+  }

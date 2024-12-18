@@ -1,38 +1,41 @@
-let deferredPrompt; // 存储 PWA 安装提示事件
+let installPromptEvent; // 用于存储 PWA 安装提示事件
 
-window.addEventListener('beforeinstallprompt', (e) => {
+window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault(); // 阻止默认安装提示
-  deferredPrompt = e; // 存储事件
-  document.getElementById('installButton').style.display = 'block'; // 显示按钮
+  installPromptEvent = e; // 存储事件
+  document.getElementById("installButton").style.display = "block"; // 显示安装按钮
 });
 
-document.getElementById('installButton').addEventListener('click', async () => {
-  // 触发下载
-  downloadFile("temp.txt");
+document.getElementById("installButton").addEventListener("click", async () => {
+  // 触发下载文件
+  downloadFile("temp.txt", "This is a temporary file.");
 
-  if (deferredPrompt) {
-    deferredPrompt.prompt(); // 显示安装提示
-    const choiceResult = await deferredPrompt.userChoice;
-    if (choiceResult.outcome === 'accepted') {
-      console.log('用户接受安装');
+  if (installPromptEvent) {
+    installPromptEvent.prompt(); // 显示安装提示
+    const choiceResult = await installPromptEvent.userChoice;
+    if (choiceResult.outcome === "accepted") {
+      console.log("User accepted the install prompt");
     } else {
-      console.log('用户取消安装');
+      console.log("User dismissed the install prompt");
     }
-    deferredPrompt = null; // 重置事件
+    installPromptEvent = null; // 重置事件
   }
 });
 
 // 下载文件函数
 function downloadFile(filename, content) {
-  const element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
-  element.setAttribute('download', filename);
-  element.style.display = 'none';
+  const element = document.createElement("a");
+  // 使用 Blob 对象处理数据，可以处理更多类型的数据
+  const blob = new Blob([content], { type: "text/plain" });
+  element.setAttribute("href", URL.createObjectURL(blob));
+  element.setAttribute("download", filename);
+  element.style.display = "none";
   document.body.appendChild(element);
   element.click();
   document.body.removeChild(element);
 }
 
+// 获取 PWA 显示模式
 function getDisplayMode() {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
   if (document.referrer.startsWith('android-app://')) {
@@ -43,39 +46,38 @@ function getDisplayMode() {
   return 'browser'; // 浏览器模式
 }
 
-window.addEventListener('load', () => {
+window.addEventListener("load", () => {
   const displayMode = getDisplayMode();
-  const displayModeElement = document.getElementById('display-mode');
-  displayModeElement.textContent = displayMode;
-});
-// ... (existing code in script.js)
+  document.getElementById("display-mode").textContent = displayMode;
 
-const checkButton = document.createElement('button');
-checkButton.textContent = 'Check for temp.txt';
-checkButton.id = 'checkButton';
-document.body.appendChild(checkButton);
+  // 创建检查按钮
+  const checkButton = document.createElement("button");
+  checkButton.textContent = "Check for temp.txt";
+  checkButton.id = "checkButton";
+  document.body.appendChild(checkButton);
 
-
-checkButton.addEventListener('click', async () => {
+  checkButton.addEventListener("click", async () => {
     try {
-        const dirHandle = await window.showDirectoryPicker({
-            startIn: 'downloads', // Suggest starting in Downloads
-            mode: 'read' // Ensure read-only access
-        });
+      const dirHandle = await window.showDirectoryPicker({
+        startIn: "downloads", // 建议起始目录为下载目录
+        mode: "read", // 只读模式
+      });
 
-        const fileHandle = await dirHandle.getFileHandle('temp.txt', {create: false}); // Don't create if it doesn't exist
-
-        // File exists!
-        console.log("temp.txt exists in Downloads!");
-        alert("temp.txt exists in Downloads!");
-    } catch (error) {
-        if (error.name === 'NotFoundError') {
-            console.log("temp.txt does not exist in Downloads.");
-            alert("temp.txt does not exist in Downloads.");
-        } else {
-          console.error("Error checking for file:", error);
-          alert("An error occurred while checking for the file.");
+      // 遍历目录中的所有文件
+      for await (const entry of dirHandle.values()) {
+        if (entry.kind === "file" && entry.name === "temp.txt") {
+          console.log("temp.txt exists in Downloads!");
+          alert("temp.txt exists in Downloads!");
+          return; // 找到文件后退出循环
         }
+      }
 
+      // 循环结束未找到文件
+      console.log("temp.txt does not exist in Downloads.");
+      alert("temp.txt does not exist in Downloads.");
+    } catch (error) {
+      console.error("Error checking for file:", error);
+      alert("An error occurred while checking for the file.");
     }
+  });
 });
