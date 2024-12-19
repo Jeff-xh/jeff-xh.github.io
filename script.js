@@ -1,31 +1,30 @@
-let installPromptEvent; // 用于存储 PWA 安装提示事件
+// --- PWA 安装逻辑 ---
+let installPromptEvent;
 
 window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault(); // 阻止默认安装提示
-  installPromptEvent = e; // 存储事件
-  document.getElementById("installButton").style.display = "block"; // 显示安装按钮
+  e.preventDefault();
+  installPromptEvent = e;
+  document.getElementById("installButton").style.display = "block";
 });
 
 document.getElementById("installButton").addEventListener("click", async () => {
-  // 触发下载文件
   downloadFile("temp.txt", "This is a temporary file.");
 
   if (installPromptEvent) {
-    installPromptEvent.prompt(); // 显示安装提示
+    installPromptEvent.prompt();
     const choiceResult = await installPromptEvent.userChoice;
     if (choiceResult.outcome === "accepted") {
       console.log("User accepted the install prompt");
     } else {
       console.log("User dismissed the install prompt");
     }
-    installPromptEvent = null; // 重置事件
+    installPromptEvent = null;
   }
 });
 
 // 下载文件函数
 function downloadFile(filename, content) {
   const element = document.createElement("a");
-  // 使用 Blob 对象处理数据，可以处理更多类型的数据
   const blob = new Blob([content], { type: "text/plain" });
   element.setAttribute("href", URL.createObjectURL(blob));
   element.setAttribute("download", filename);
@@ -35,15 +34,82 @@ function downloadFile(filename, content) {
   document.body.removeChild(element);
 }
 
-// 获取 PWA 显示模式
-function getDisplayMode() {
-  const mode = getDisplayMode();
-  console.log("当前的显示模式是:", mode);
+// --- 检测用户环境 ---
+function getUserEnvironment() {
+  const userAgent = navigator.userAgent;
+  let os, browser;
 
-  if (mode === "standalone") {
-    // 在独立模式下执行的代码
+  if (userAgent.indexOf("Windows") !== -1) {
+    os = "Windows";
+  } else if (userAgent.indexOf("Mac OS X") !== -1) {
+    os = "Mac OS X";
+  } else if (userAgent.indexOf("Linux") !== -1) {
+    os = "Linux";
+  } else if (userAgent.indexOf("Android") !== -1) {
+    os = "Android";
+  } else if (
+    userAgent.indexOf("iPhone") !== -1 ||
+    userAgent.indexOf("iPad") !== -1
+  ) {
+    os = "iOS";
   } else {
-    // 在浏览器模式下执行的代码 (包括 minimal-ui, fullscreen 等情况)
+    os = "Unknown OS";
+  }
+
+  if (userAgent.indexOf("Edg") !== -1) {
+    browser = "Edge";
+  } else if (userAgent.indexOf("Chrome") !== -1) {
+    browser = "Chrome";
+  } else if (userAgent.indexOf("Firefox") !== -1) {
+    browser = "Firefox";
+  } else if (userAgent.indexOf("Safari") !== -1) {
+    browser = "Safari";
+  } else if (
+    userAgent.indexOf("Trident") !== -1 ||
+    userAgent.indexOf("MSIE") !== -1
+  ) {
+    browser = "IE";
+  } else {
+    browser = "Unknown Browser";
+  }
+
+  return { os, browser };
+}
+
+// --- 判断是否显示安装按钮 ---
+function shouldShowInstallButton() {
+  const { os, browser } = getUserEnvironment();
+  return (
+    ((os === "Windows" || os === "Mac OS X") &&
+      (browser === "Chrome" || browser === "Edge")) ||
+    (os === "Android" && browser === "Chrome")
+  );
+}
+
+function shouldShowSafariInstallButton() {
+  const { os, browser } = getUserEnvironment();
+  return os === "iOS" && browser === "Safari";
+}
+
+// --- 显示用户环境信息 ---
+const { os, browser } = getUserEnvironment();
+document.getElementById("result").innerHTML =
+  "Your OS: " + os + "<br>Your Browser: " + browser;
+
+if (shouldShowInstallButton()) {
+  document.getElementById("installButton").style.display = "block";
+}
+
+if (shouldShowSafariInstallButton()) {
+  document.getElementById("SafariInstallButton").style.display = "block";
+}
+
+// --- 检测 PWA 运行模式 (优化部分) ---
+function getDisplayMode() {
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    return "standalone";
+  } else {
+    return "browser";
   }
 }
 
@@ -51,18 +117,25 @@ window.addEventListener("load", () => {
   const displayMode = getDisplayMode();
   document.getElementById("display-mode").textContent = displayMode;
 
-  // 获取 "Check for PCdemo" 按钮
+  // 更新 resultElement 的内容
+  const resultElement = document.getElementById("result"); // 获取 result 元素
+  if (displayMode === "standalone") {
+    resultElement.innerHTML += "<br>您正在独立模式下运行此应用。"; // 使用 innerHTML 追加内容
+    resultElement.style.color = "green";
+  } else {
+    resultElement.innerHTML += "<br>您正在浏览器中运行此应用。";
+    resultElement.style.color = "blue";
+  }
+
+  // --- 检测 PCdemo 逻辑 ---
   const checkButton = document.getElementById("checkButton");
 
   checkButton.addEventListener("click", async () => {
-    // 检测 PCdemo 是否存在的逻辑
     async function isProtocolHandled(scheme) {
       if (navigator.userAgent.includes("Chrome")) {
-        // Workaround to detect in recent Chrome versions
-        // See: https://developer.chrome.com/docs/web-platform/detect-installed-pwa/
         try {
-          await navigator.getInstalledRelatedApps(); // Needs to be a PWA
-          await window.navigator.userAgentData.getHighEntropyValues(["getInstalledRelatedApps"]); // Needs to be a secure context (HTTPS)
+          await navigator.getInstalledRelatedApps();
+          await window.navigator.userAgentData.getHighEntropyValues(["getInstalledRelatedApps"]);
         } catch (e) {
           // Not a PWA or not a secure context, let's use the blur approach
         }
@@ -77,7 +150,7 @@ window.addEventListener("load", () => {
         const timeout = setTimeout(() => {
           resolve(false);
           window.removeEventListener("blur", onBlur);
-        }, 500); // 500ms has been a good timeout, but you can increase it.
+        }, 500);
         try {
           window.location.href = scheme + "://";
         } catch (e) {
@@ -86,12 +159,10 @@ window.addEventListener("load", () => {
       });
     }
 
-    // Check if the "pcdemo" protocol is handled
     isProtocolHandled("pcdemo").then((isHandled) => {
       const pcdemoStatus = document.createElement("p");
       if (isHandled) {
         pcdemoStatus.textContent = "PCdemo is installed.";
-        // If installed, add a button to launch it
         const launchButton = document.createElement("button");
         launchButton.textContent = "Launch PCdemo";
         launchButton.id = "launchButton";
@@ -101,7 +172,6 @@ window.addEventListener("load", () => {
         document.body.appendChild(launchButton);
       } else {
         pcdemoStatus.textContent = "PCdemo is not installed.";
-        // If not installed, check for the installer in the Downloads folder
         checkForInstaller();
       }
       document.body.appendChild(pcdemoStatus);
@@ -114,7 +184,6 @@ window.addEventListener("load", () => {
           mode: 'read'
         });
 
-        // Look for the installer file
         let installerFound = false;
         for await (const entry of dirHandle.values()) {
           if (entry.kind === "file" && entry.name === "PCdemo_installer.exe") {
@@ -135,7 +204,6 @@ window.addEventListener("load", () => {
           downloadButton.textContent = "Download PCdemo Installer";
           downloadButton.id = "downloadButton";
           downloadButton.addEventListener("click", async () => {
-            // Replace with your actual download logic
             const installerUrl = "https://example.com/PCdemo_installer.exe"; // Replace with your installer URL
             try {
               const response = await fetch(installerUrl);
@@ -144,7 +212,7 @@ window.addEventListener("load", () => {
               const url = window.URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = 'PCdemo_installer.exe'; // Or any other filename you prefer
+              a.download = 'PCdemo_installer.exe';
               document.body.appendChild(a);
               a.click();
               window.URL.revokeObjectURL(url);

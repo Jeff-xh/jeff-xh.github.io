@@ -1,118 +1,110 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
-        j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-P7L5VFKS");
-    </script>
-    <title>My PWA App</title>
-    <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <noscript>
-      <iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-P7L5VFKS"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe>
-    </noscript>
+<head>
+  <script>
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != "dataLayer" ? "&l=" + l : "";
+      j.async = true;
+      j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, "script", "dataLayer", "GTM-P7L5VFKS");
+  </script>
+  <title>My PWA App</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <noscript>
+    <iframe
+      src="https://www.googletagmanager.com/ns.html?id=GTM-P7L5VFKS"
+      height="0"
+      width="0"
+      style="display: none; visibility: hidden"
+    ></iframe>
+  </noscript>
 
-    <h1>Hello PWA</h1>
-    <button id="checkButton">Check for PCdemo</button>
+  <h1>Hello PWA</h1>
+  <button id="checkButton">Check for PCdemo</button>
 
-    <button id="installButton" class="install-button">Install App</button>
-    <button id="SafariInstallButton" class="safari-install-button">
-      Install on Safari
-    </button>
+  <button id="installButton" class="install-button">Install App</button>
+  <button id="SafariInstallButton" class="safari-install-button">Install on Safari</button>
 
-    <p id="result"></p>
-    <h2>PWA Display Mode:</h2>
-    <p id="display-mode">Loading...</p>
+  <p id="result"></p>
+  <h2>PWA Display Mode:</h2>
+  <p id="display-mode">Loading...</p>
 
-    <script>
-      // 获取用户操作系统和浏览器信息
-      function getUserEnvironment() {
-        const userAgent = navigator.userAgent;
-        let os, browser;
+  <script>
+    // 获取用户操作系统和浏览器信息
+    function getUserEnvironment() {
+      const userAgent = navigator.userAgent;
+      let os, browser;
 
-        // 操作系统检测 (这部分代码保持不变)
-        if (userAgent.indexOf("Windows") !== -1) {
-          os = "Windows";
-        } else if (userAgent.indexOf("Mac OS X") !== -1) {
-          os = "Mac OS X";
-        } else if (userAgent.indexOf("Linux") !== -1) {
-          os = "Linux";
-        } else if (userAgent.indexOf("Android") !== -1) {
-          os = "Android";
-        } else if (
-          userAgent.indexOf("iPhone") !== -1 ||
-          userAgent.indexOf("iPad") !== -1
-        ) {
-          os = "iOS";
-        } else {
-          os = "Unknown OS";
-        }
-
-        // 浏览器检测 (这部分代码需要修改)
-        if (userAgent.indexOf("Edg") !== -1) {
-          // 使用 "Edg" 而不是 "Edge" 来区分新版 Edge (基于 Chromium)
-          browser = "Edge";
-        } else if (userAgent.indexOf("Chrome") !== -1) {
-          browser = "Chrome";
-        } else if (userAgent.indexOf("Firefox") !== -1) {
-          browser = "Firefox";
-        } else if (userAgent.indexOf("Safari") !== -1) {
-          browser = "Safari";
-        } else if (
-          userAgent.indexOf("Trident") !== -1 ||
-          userAgent.indexOf("MSIE") !== -1
-        ) {
-          browser = "IE";
-        } else {
-          browser = "Unknown Browser";
-        }
-
-        return { os, browser };
+      // 操作系统检测 (这部分代码保持不变)
+      if (userAgent.indexOf("Windows") !== -1) {
+        os = "Windows";
+      } else if (userAgent.indexOf("Mac OS X") !== -1) {
+        os = "Mac OS X";
+      } else if (userAgent.indexOf("Linux") !== -1) {
+        os = "Linux";
+      } else if (userAgent.indexOf("Android") !== -1) {
+        os = "Android";
+      } else if (userAgent.indexOf("iPhone") !== -1 || userAgent.indexOf("iPad") !== -1) {
+        os = "iOS";
+      } else {
+        os = "Unknown OS";
       }
 
-      // 判断是否显示安装按钮
-      function shouldShowInstallButton() {
-        const { os, browser } = getUserEnvironment();
-        return (
-          ((os === "Windows" || os === "Mac OS X") &&
-            (browser === "Chrome" || browser === "Edge")) ||
-          (os === "Android" && browser === "Chrome")
-        );
+      // 浏览器检测 (修复后的代码)
+      if (userAgent.indexOf("Edg") !== -1) {
+        // 使用 "Edg" 而不是 "Edge" 来区分新版 Edge (基于 Chromium)
+        browser = "Edge";
+      } else if (userAgent.indexOf("Chrome") !== -1) {
+        browser = "Chrome";
+      } else if (userAgent.indexOf("Firefox") !== -1) {
+        browser = "Firefox";
+      } else if (userAgent.indexOf("Safari") !== -1) {
+        browser = "Safari";
+      } else if (userAgent.indexOf("Trident") !== -1 || userAgent.indexOf("MSIE") !== -1) {
+        browser = "IE";
+      } else {
+        browser = "Unknown Browser";
       }
 
-      // 判断是否显示Safari安装按钮
-      function shouldShowSafariInstallButton() {
-        const { os, browser } = getUserEnvironment();
-        return os === "iOS" && browser === "Safari";
-      }
+      return { os, browser };
+    }
+
+    // 判断是否显示安装按钮 (这部分代码保持不变)
+    function shouldShowInstallButton() {
       const { os, browser } = getUserEnvironment();
-      document.getElementById("result").innerHTML =
-        "Your OS: " + os + "<br>Your Browser: " + browser;
+      return (
+        ((os === "Windows" || os === "Mac OS X") && (browser === "Chrome" || browser === "Edge")) ||
+        (os === "Android" && browser === "Chrome")
+      );
+    }
 
-      // 根据条件显示安装按钮
-      if (shouldShowInstallButton()) {
-        document.getElementById("installButton").style.display = "block";
-      }
-      // 根据条件显示Safari安装按钮
-      if (shouldShowSafariInstallButton()) {
-        document.getElementById("SafariInstallButton").style.display = "block";
-      }
-    </script>
-    <script src="script.js"></script>
-  </body>
+    // 判断是否显示Safari安装按钮 (这部分代码保持不变)
+    function shouldShowSafariInstallButton() {
+      const { os, browser } = getUserEnvironment();
+      return os === "iOS" && browser === "Safari";
+    }
+
+    // 获取 OS 和 Browser 信息并显示在页面上 (这部分是关键)
+    const { os, browser } = getUserEnvironment();
+    document.getElementById("result").innerHTML = "Your OS: " + os + "<br>Your Browser: " + browser;
+
+    // 根据条件显示安装按钮 (这部分代码保持不变)
+    if (shouldShowInstallButton()) {
+      document.getElementById("installButton").style.display = "block";
+    }
+    // 根据条件显示Safari安装按钮 (这部分代码保持不变)
+    if (shouldShowSafariInstallButton()) {
+      document.getElementById("SafariInstallButton").style.display = "block";
+    }
+  </script>
+  <script src="script.js"></script>
+</body>
 </html>
