@@ -37,6 +37,7 @@ function downloadFile(filename, content) {
 
 // 获取 PWA 显示模式
 function getDisplayMode() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
   if (document.referrer.startsWith("android-app://")) {
     return "twa"; // 可信网络活动 (Trusted Web Activity)
   } else if (navigator.standalone || window.matchMedia("(display-mode: standalone)").matches) {
@@ -108,8 +109,8 @@ window.addEventListener("load", () => {
     async function checkForInstaller() {
       try {
         const dirHandle = await window.showDirectoryPicker({
-            startIn: 'downloads',
-            mode: 'read'
+          startIn: 'downloads',
+          mode: 'read'
         });
 
         // Look for the installer file
@@ -136,20 +137,20 @@ window.addEventListener("load", () => {
             // Replace with your actual download logic
             const installerUrl = "https://example.com/PCdemo_installer.exe"; // Replace with your installer URL
             try {
-                const response = await fetch(installerUrl);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'PCdemo_installer.exe'; // Or any other filename you prefer
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
+              const response = await fetch(installerUrl);
+              if (!response.ok) throw new Error('Network response was not ok');
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'PCdemo_installer.exe'; // Or any other filename you prefer
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(a);
             } catch (error) {
-                console.error('Error downloading the installer:', error);
-                alert('Failed to download installer.');
+              console.error('Error downloading the installer:', error);
+              alert('Failed to download installer.');
             }
           });
           document.body.appendChild(downloadButton);
