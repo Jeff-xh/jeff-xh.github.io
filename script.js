@@ -37,13 +37,14 @@ function downloadFile(filename, content) {
 
 // 获取 PWA 显示模式
 function getDisplayMode() {
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-  if (document.referrer.startsWith("android-app://")) {
-    return "twa"; // 可信网络活动 (Trusted Web Activity)
-  } else if (navigator.standalone || window.matchMedia("(display-mode: standalone)").matches) {
-    return "standalone"; // 独立模式
+  const mode = getDisplayMode();
+  console.log("当前的显示模式是:", mode);
+
+  if (mode === "standalone") {
+    // 在独立模式下执行的代码
+  } else {
+    // 在浏览器模式下执行的代码 (包括 minimal-ui, fullscreen 等情况)
   }
-  return "browser"; // 浏览器模式
 }
 
 window.addEventListener("load", () => {
